@@ -13,18 +13,14 @@ type Shell struct {
 }
 
 func (s Shell) check() error {
-	if s.Height <= 0 {
+	switch {
+	case s.Height <= 0:
 		return fmt.Errorf("Height of shell cannot be less or equal zero")
-	}
-
-	if s.Diameter <= 0 {
+	case s.Diameter <= 0:
 		return fmt.Errorf("Diameter of shell cannot be less or equal zero")
-	}
-
-	if s.Precition <= 0 {
+	case s.Precition <= 0:
 		return fmt.Errorf("Precition of shell cannot be less or equal zero")
 	}
-
 	return nil
 }
 
@@ -67,7 +63,7 @@ func (s Shell) Generate(offset bool) (mesh Mesh, err error) {
 		for i := 0; i < amountOfPointOnLevel; i++ {
 			angle := 2.*math.Pi/float64(amountOfPointOnLevel)*float64(i) + angleOffset
 			mesh.Points = append(mesh.Points, Point{
-				index: uint64(i + amountOfPointOnLevel*level),
+				index: int(i + amountOfPointOnLevel*level),
 				X:     s.Diameter * math.Sin(angle),
 				Y:     s.Diameter * math.Cos(angle),
 				Z:     elevation,
@@ -87,17 +83,17 @@ func (s Shell) Generate(offset bool) (mesh Mesh, err error) {
 		for i := 0; i < amountOfPointOnLevel; i++ {
 			if i+1 < amountOfPointOnLevel {
 				mesh.Triangles = append(mesh.Triangles, quardToTriangle(
-					uint64(i+amountOfPointOnLevel*level),
-					uint64(i+1+amountOfPointOnLevel*level),
-					uint64(i+amountOfPointOnLevel*(level+1)),
-					uint64(i+1+amountOfPointOnLevel*(level+1)),
+					int(i+amountOfPointOnLevel*level),
+					int(i+1+amountOfPointOnLevel*level),
+					int(i+amountOfPointOnLevel*(level+1)),
+					int(i+1+amountOfPointOnLevel*(level+1)),
 					iteratorOffset)...)
 			} else {
 				mesh.Triangles = append(mesh.Triangles, quardToTriangle(
-					uint64(i+amountOfPointOnLevel*level),
-					uint64(0+amountOfPointOnLevel*level),
-					uint64(i+amountOfPointOnLevel*(level+1)),
-					uint64(0+amountOfPointOnLevel*(level+1)),
+					int(i+amountOfPointOnLevel*level),
+					int(0+amountOfPointOnLevel*level),
+					int(i+amountOfPointOnLevel*(level+1)),
+					int(0+amountOfPointOnLevel*(level+1)),
 					iteratorOffset)...)
 			}
 		}
@@ -120,13 +116,13 @@ func (s Shell) Generate(offset bool) (mesh Mesh, err error) {
 //     | \ |
 //     |  \|
 //  p1 *---* p2
-func quardToTriangle(p1, p2, p3, p4 uint64, types bool) (t []Triangle) {
+func quardToTriangle(p1, p2, p3, p4 int, types bool) (t []Triangle) {
 	if types {
-		t = append(t, Triangle{Indexs: [3]uint64{p1, p3, p2}})
-		t = append(t, Triangle{Indexs: [3]uint64{p2, p3, p4}})
+		t = append(t, Triangle{Indexs: [3]int{p1, p3, p2}})
+		t = append(t, Triangle{Indexs: [3]int{p2, p3, p4}})
 		return t
 	}
-	t = append(t, Triangle{Indexs: [3]uint64{p1, p4, p2}})
-	t = append(t, Triangle{Indexs: [3]uint64{p1, p3, p4}})
+	t = append(t, Triangle{Indexs: [3]int{p1, p4, p2}})
+	t = append(t, Triangle{Indexs: [3]int{p1, p3, p4}})
 	return t
 }

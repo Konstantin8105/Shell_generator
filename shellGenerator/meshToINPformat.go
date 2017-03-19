@@ -1,6 +1,9 @@
 package shellGenerator
 
-import "fmt"
+import (
+	"fmt"
+	"sort"
+)
 
 //------------------------------------------
 // INP file format
@@ -18,6 +21,9 @@ import "fmt"
 func (m Mesh) convertMeshToINP() (lines []string) {
 	lines = append(lines, "*Heading")
 	lines = append(lines, " shellGenerator")
+
+	// sort points by index
+	sort.Sort(pp(m.Points))
 
 	lines = append(lines, "*NODE")
 	for _, point := range m.Points {
