@@ -36,7 +36,7 @@ func maxInt(a, b int) int {
 }
 
 // Generate mesh of shell
-func (s Shell) Generate() (mesh Mesh, err error) {
+func (s Shell) Generate(offset bool) (mesh Mesh, err error) {
 	err = s.check()
 	if err != nil {
 		return mesh, err
@@ -51,10 +51,21 @@ func (s Shell) Generate() (mesh Mesh, err error) {
 	amountLevelsByHeight := maxInt(2, int(s.Height/s.Precition))
 	deltaHeigt := s.Height / float64(amountLevelsByHeight-1)
 
+	var iteratorOffset bool
+	var angleOffset float64
 	for level := 0; level <= amountLevelsByHeight; level++ {
+		elevation := deltaHeigt * float64(level)
+		if offset {
+			if iteratorOffset {
+				iteratorOffset = false
+				angleOffset = 2. * float64(math.Pi) / float64(amountOfPointOnLevel) / 2.
+			} else {
+				iteratorOffset = true
+				angleOffset = 0
+			}
+		}
 		for i := 0; i < amountOfPointOnLevel; i++ {
-			elevation := deltaHeigt * float64(level)
-			angle := 2. * math.Pi / float64(amountOfPointOnLevel) * float64(i)
+			angle := 2.*math.Pi/float64(amountOfPointOnLevel)*float64(i) + angleOffset
 			mesh.Points = append(mesh.Points, Point{
 				index: uint64(i + amountOfPointOnLevel*level),
 				X:     s.Diameter * math.Sin(angle),
@@ -66,33 +77,56 @@ func (s Shell) Generate() (mesh Mesh, err error) {
 
 	// generate triangles
 
+	iteratorOffset = false
 	for level := 0; level < amountLevelsByHeight; level++ {
+		if iteratorOffset {
+			iteratorOffset = false
+		} else {
+			iteratorOffset = true
+		}
 		for i := 0; i < amountOfPointOnLevel; i++ {
 			if i+1 < amountOfPointOnLevel {
-				mesh.Triangles = append(mesh.Triangles, Triangle{Indexs: [3]uint64{
-					uint64(i + amountOfPointOnLevel*level),
-					uint64(i + amountOfPointOnLevel*(level+1)),
-					uint64(i + 1 + amountOfPointOnLevel*level),
-				}})
-				mesh.Triangles = append(mesh.Triangles, Triangle{Indexs: [3]uint64{
-					uint64(i + 1 + amountOfPointOnLevel*level),
-					uint64(i + amountOfPointOnLevel*(level+1)),
-					uint64(i + 1 + amountOfPointOnLevel*(level+1)),
-				}})
+				mesh.Triangles = append(mesh.Triangles, quardToTriangle(
+					uint64(i+amountOfPointOnLevel*level),
+					uint64(i+1+amountOfPointOnLevel*level),
+					uint64(i+amountOfPointOnLevel*(level+1)),
+					uint64(i+1+amountOfPointOnLevel*(level+1)),
+					iteratorOffset)...)
 			} else {
-				mesh.Triangles = append(mesh.Triangles, Triangle{Indexs: [3]uint64{
-					uint64(i + amountOfPointOnLevel*level),
-					uint64(i + amountOfPointOnLevel*(level+1)),
-					uint64(0 + amountOfPointOnLevel*level),
-				}})
-				mesh.Triangles = append(mesh.Triangles, Triangle{Indexs: [3]uint64{
-					uint64(0 + amountOfPointOnLevel*level),
-					uint64(i + amountOfPointOnLevel*(level+1)),
-					uint64(0 + amountOfPointOnLevel*(level+1)),
-				}})
+				mesh.Triangles = append(mesh.Triangles, quardToTriangle(
+					uint64(i+amountOfPointOnLevel*level),
+					uint64(0+amountOfPointOnLevel*level),
+					uint64(i+amountOfPointOnLevel*(level+1)),
+					uint64(0+amountOfPointOnLevel*(level+1)),
+					iteratorOffset)...)
 			}
 		}
 	}
 
 	return mesh, nil
+}
+
+// Convert 4 points element to 2 triangle
+// type = false
+//  p3 *---* p4
+//     |  /|
+//     | / |
+//     |/  |
+//  p1 *---* p2
+//
+// type = true
+//  p3 *---* p4
+//     |\  |
+//     | \ |
+//     |  \|
+//  p1 *---* p2
+func quardToTriangle(p1, p2, p3, p4 uint64, types bool) (t []Triangle) {
+	if types {
+		t = append(t, Triangle{Indexs: [3]uint64{p1, p3, p2}})
+		t = append(t, Triangle{Indexs: [3]uint64{p2, p3, p4}})
+		return t
+	}
+	t = append(t, Triangle{Indexs: [3]uint64{p1, p4, p2}})
+	t = append(t, Triangle{Indexs: [3]uint64{p1, p3, p4}})
+	return t
 }

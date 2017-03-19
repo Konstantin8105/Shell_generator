@@ -1,5 +1,7 @@
 package shellGenerator
 
+import "github.com/Konstantin8105/Convert-INP-to-STD-format/convertorInp"
+
 // Point - point of mesh
 type Point struct {
 	index   uint64  // index of point
@@ -15,4 +17,10 @@ type Triangle struct {
 type Mesh struct {
 	Points    []Point    // points
 	Triangles []Triangle // triangles
+}
+
+// ConvertMeshToINPfile - convertor
+func (m Mesh) ConvertMeshToINPfile(filename string) (err error) {
+	err = convertorInp.CreateNewFile(filename, m.convertMeshToINP())
+	return err
 }

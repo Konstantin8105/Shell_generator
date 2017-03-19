@@ -7,7 +7,12 @@ import (
 )
 
 func main() {
-	s := shellGenerator.Shell{Height: 0.5, Diameter: 1.0, Precition: 0.2}
+	s := shellGenerator.Shell{Height: 1.5, Diameter: 1.0, Precition: 0.2}
 	fmt.Println("Shell = ", s)
-	fmt.Println(s.Generate())
+	m, err := s.Generate(true)
+	if err != nil {
+		fmt.Printf("Error in data: %v\n", err)
+		return
+	}
+	m.ConvertMeshToINPfile("cylinder.inp")
 }
