@@ -47,6 +47,10 @@ func (s Shell) Generate(offset bool) (mesh Mesh, err error) {
 	amountLevelsByHeight := maxInt(2, int(s.Height/s.Precition))
 	deltaHeigt := s.Height / float64(amountLevelsByHeight-1)
 
+	// init number of point
+	// cannot be less 1
+	var initPoint = 1
+
 	var iteratorOffset bool
 	var angleOffset float64
 	for level := 0; level <= amountLevelsByHeight; level++ {
@@ -63,7 +67,7 @@ func (s Shell) Generate(offset bool) (mesh Mesh, err error) {
 		for i := 0; i < amountOfPointOnLevel; i++ {
 			angle := 2.*math.Pi/float64(amountOfPointOnLevel)*float64(i) + angleOffset
 			mesh.Points = append(mesh.Points, Point{
-				index: int(i + amountOfPointOnLevel*level),
+				index: int(i+amountOfPointOnLevel*level) + initPoint,
 				X:     s.Diameter * math.Sin(angle),
 				Y:     s.Diameter * math.Cos(angle),
 				Z:     elevation,
@@ -83,17 +87,17 @@ func (s Shell) Generate(offset bool) (mesh Mesh, err error) {
 		for i := 0; i < amountOfPointOnLevel; i++ {
 			if i+1 < amountOfPointOnLevel {
 				mesh.Triangles = append(mesh.Triangles, quardToTriangle(
-					int(i+amountOfPointOnLevel*level),
-					int(i+1+amountOfPointOnLevel*level),
-					int(i+amountOfPointOnLevel*(level+1)),
-					int(i+1+amountOfPointOnLevel*(level+1)),
+					int(i+amountOfPointOnLevel*level+initPoint),
+					int(i+1+amountOfPointOnLevel*level+initPoint),
+					int(i+amountOfPointOnLevel*(level+1)+initPoint),
+					int(i+1+amountOfPointOnLevel*(level+1)+initPoint),
 					iteratorOffset)...)
 			} else {
 				mesh.Triangles = append(mesh.Triangles, quardToTriangle(
-					int(i+amountOfPointOnLevel*level),
-					int(0+amountOfPointOnLevel*level),
-					int(i+amountOfPointOnLevel*(level+1)),
-					int(0+amountOfPointOnLevel*(level+1)),
+					int(i+amountOfPointOnLevel*level+initPoint),
+					int(0+amountOfPointOnLevel*level+initPoint),
+					int(i+amountOfPointOnLevel*(level+1)+initPoint),
+					int(0+amountOfPointOnLevel*(level+1)+initPoint),
 					iteratorOffset)...)
 			}
 		}
