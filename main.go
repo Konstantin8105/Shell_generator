@@ -9,6 +9,7 @@ import (
 func main() {
 
 	shell()
+	gmshFile()
 
 	s := shellGenerator.Shell{Height: 1.5, Diameter: 1.0, Precition: 0.2}
 	stiffiner := shellGenerator.Stiffiner{
@@ -50,4 +51,71 @@ func shell() {
 		fmt.Printf("Wrong mesh: %v\n", err)
 		return
 	}
+}
+
+func gmshFile() {
+	filename := "testModel.geo"
+
+	var gh shellGenerator.GmshFormat
+	gh.Points = append(gh.Points, shellGenerator.GmshPoint{
+		Index:     1,
+		X:         0.,
+		Y:         0.,
+		Z:         0.,
+		Precision: 0.1,
+	})
+	gh.Points = append(gh.Points, shellGenerator.GmshPoint{
+		Index:     2,
+		X:         1.,
+		Y:         0.,
+		Z:         0.,
+		Precision: 0.1,
+	})
+	gh.Points = append(gh.Points, shellGenerator.GmshPoint{
+		Index:     3,
+		X:         0.,
+		Y:         1.,
+		Z:         0.,
+		Precision: 0.5,
+	})
+	gh.Points = append(gh.Points, shellGenerator.GmshPoint{
+		Index:     4,
+		X:         1.,
+		Y:         -1.,
+		Z:         0.,
+		Precision: 0.3,
+	})
+
+	gh.Lines = append(gh.Lines, shellGenerator.GmshLine{
+		Index:           5,
+		BeginPointIndex: 2,
+		EndPointIndex:   4,
+	})
+
+	gh.Arcs = append(gh.Arcs, shellGenerator.GmshArc{
+		Index:            6,
+		BeginPointIndex:  2,
+		CenterPointIndex: 1,
+		EndPointIndex:    3,
+	})
+
+	gh.Extrudes = append(gh.Extrudes, shellGenerator.GmshExtrude{
+		Xextrude:     0,
+		Yextrude:     0,
+		Zextrude:     3,
+		IndexElement: 5,
+	})
+	gh.Extrudes = append(gh.Extrudes, shellGenerator.GmshExtrude{
+		Xextrude:     0,
+		Yextrude:     0,
+		Zextrude:     3,
+		IndexElement: 6,
+	})
+
+	err := gh.Write(filename)
+	if err != nil {
+		fmt.Println("Error in Gmsh format: ", err)
+		return
+	}
+
 }
