@@ -112,7 +112,7 @@ func gmshFile() {
 		IndexElement: 6,
 	})
 
-	err := gh.Write(filename)
+	err := gh.WriteGEO(filename)
 	if err != nil {
 		fmt.Println("Error in Gmsh format: ", err)
 		return

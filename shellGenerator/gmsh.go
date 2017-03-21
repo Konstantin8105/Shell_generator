@@ -76,8 +76,8 @@ type GmshFormat struct {
 	Extrudes []GmshExtrude
 }
 
-// Write - write Gmsh file
-func (f GmshFormat) Write(filename string) (err error) {
+// WriteGEO - write Gmsh file
+func (f GmshFormat) WriteGEO(filename string) (err error) {
 	if len(filename) == 0 {
 		return fmt.Errorf("Filename is zero: %v", filename)
 	}
