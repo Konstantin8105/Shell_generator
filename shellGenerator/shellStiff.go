@@ -47,8 +47,15 @@ func (s *ShellWithStiffiners) AddStiffiners(st Stiffiner) (err error) {
 
 // Generate mesh of shell
 func (s ShellWithStiffiners) Generate(offset bool) (mesh Mesh, err error) {
-	if offset {
-		return s.generateWithOffset()
-	}
-	return s.generateWithoutOffset()
+	/*
+		if offset {
+			return s.generateWithOffset()
+		}
+		return s.generateWithoutOffset()
+	*/
+	gF := s.generateGMSH()
+	gF.WriteGEO(tempFileName)
+	inpFilenam := execGmsh(tempFileName)
+	mesh = readINP(inpFilename)
+	return mesh, err
 }
