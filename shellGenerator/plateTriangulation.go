@@ -2,7 +2,8 @@ package shellGenerator
 
 import (
 	"fmt"
-	"sort"
+
+	"github.com/Konstantin8105/Shell_generator/mesh"
 )
 
 // Plate
@@ -32,14 +33,14 @@ import (
 //    | /   | /   | /   |
 //    |/    |/    |/    |
 //    *-----*-----*-----* down
-func separatePlateOnTriangles(p Point, width, height float64, precition float64) (mesh Mesh, err error) {
+func separatePlateOnTriangles(p mesh.Point, width, height float64, precition float64) (m mesh.Mesh, err error) {
 	switch {
 	case width <= 0:
-		return mesh, fmt.Errorf("Width of plate is not correct:%v/n", width)
+		return m, fmt.Errorf("Width of plate is not correct:%v/n", width)
 	case height <= 0:
-		return mesh, fmt.Errorf("Height of plate is not correct:%v/n", height)
+		return m, fmt.Errorf("Height of plate is not correct:%v/n", height)
 	case precition <= 0:
-		return mesh, fmt.Errorf("Precition of plate is not correct:%v/n", precition)
+		return m, fmt.Errorf("Precition of plate is not correct:%v/n", precition)
 	}
 	// TYPE 1
 	// amount point on down = on up
@@ -47,28 +48,26 @@ func separatePlateOnTriangles(p Point, width, height float64, precition float64)
 	amountPoints := amountInternalPoints + 2
 	distanceBetweenPoints := width / float64(amountPoints-1)
 	if distanceBetweenPoints > precition {
-		return mesh, fmt.Errorf("Not correct choosed distance between points: %.3e < %.3e/n", distanceBetweenPoints, precition)
+		return m, fmt.Errorf("Not correct choosed distance between points: %.3e < %.3e/n", distanceBetweenPoints, precition)
 	}
 
 	dx := width / float64(amountPoints-1)
 	for i := 0; i <= amountPoints; i++ {
-		mesh.Points = append(mesh.Points, Point{
-			index: i + p.index,
+		m.Points = append(m.Points, mesh.Point{
+			Index: i + p.Index,
 			X:     dx * float64(i),
 			Y:     0,
 		})
-		mesh.Points = append(mesh.Points, Point{
-			index: i + amountPoints + 1 + p.index,
+		m.Points = append(m.Points, mesh.Point{
+			Index: i + amountPoints + 1 + p.Index,
 			X:     dx * float64(i),
 			Y:     height,
 		})
 	}
-	// sort points by index
-	sort.Sort(pp(mesh.Points))
 	for i := 0; i < amountPoints; i++ {
-		mesh.Triangles = append(mesh.Triangles, quardToTriangle(i+p.index, i+1+p.index, i+amountPoints+1+p.index, i+1+amountPoints+1+p.index, true)...)
+		m.Triangles = append(m.Triangles, quardToTriangle(i+p.Index, i+1+p.Index, i+amountPoints+1+p.Index, i+1+amountPoints+1+p.Index, true)...)
 	}
-	return mesh, nil
+	return m, nil
 }
 
 //

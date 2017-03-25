@@ -3,6 +3,8 @@ package shellGenerator
 import (
 	"fmt"
 	"math"
+
+	"github.com/Konstantin8105/Shell_generator/mesh"
 )
 
 // Shell - input data of shell
@@ -31,11 +33,11 @@ func maxInt(a, b int) int {
 	return b
 }
 
-// Generate mesh of shell
-func (s Shell) Generate(offset bool) (mesh Mesh, err error) {
+// GenerateINP - Generate file in INP format for shell
+func (s Shell) GenerateINP(offset bool, filename string) (err error) {
 	err = s.check()
 	if err != nil {
-		return mesh, err
+		return err
 	}
 
 	// generate first level of points
@@ -49,10 +51,13 @@ func (s Shell) Generate(offset bool) (mesh Mesh, err error) {
 
 	// init number of point
 	// cannot be less 1
-	var initPoint = 1
+	initPoint := 1
 
 	var iteratorOffset bool
 	var angleOffset float64
+
+	var m mesh.Mesh
+
 	for level := 0; level <= amountLevelsByHeight; level++ {
 		elevation := deltaHeigt * float64(level)
 		if offset {
@@ -66,8 +71,8 @@ func (s Shell) Generate(offset bool) (mesh Mesh, err error) {
 		}
 		for i := 0; i < amountOfPointOnLevel; i++ {
 			angle := 2.*math.Pi/float64(amountOfPointOnLevel)*float64(i) + angleOffset
-			mesh.Points = append(mesh.Points, Point{
-				index: int(i+amountOfPointOnLevel*level) + initPoint,
+			m.Points = append(m.Points, mesh.Point{
+				Index: int(i+amountOfPointOnLevel*level) + initPoint,
 				X:     s.Diameter * math.Sin(angle),
 				Y:     s.Diameter * math.Cos(angle),
 				Z:     elevation,
@@ -86,14 +91,14 @@ func (s Shell) Generate(offset bool) (mesh Mesh, err error) {
 		}
 		for i := 0; i < amountOfPointOnLevel; i++ {
 			if i+1 < amountOfPointOnLevel {
-				mesh.Triangles = append(mesh.Triangles, quardToTriangle(
+				m.Triangles = append(m.Triangles, quardToTriangle(
 					int(i+amountOfPointOnLevel*level+initPoint),
 					int(i+1+amountOfPointOnLevel*level+initPoint),
 					int(i+amountOfPointOnLevel*(level+1)+initPoint),
 					int(i+1+amountOfPointOnLevel*(level+1)+initPoint),
 					iteratorOffset)...)
 			} else {
-				mesh.Triangles = append(mesh.Triangles, quardToTriangle(
+				m.Triangles = append(m.Triangles, quardToTriangle(
 					int(i+amountOfPointOnLevel*level+initPoint),
 					int(0+amountOfPointOnLevel*level+initPoint),
 					int(i+amountOfPointOnLevel*(level+1)+initPoint),
@@ -103,7 +108,7 @@ func (s Shell) Generate(offset bool) (mesh Mesh, err error) {
 		}
 	}
 
-	return mesh, nil
+	return nil
 }
 
 // Convert 4 points element to 2 triangle
@@ -120,13 +125,13 @@ func (s Shell) Generate(offset bool) (mesh Mesh, err error) {
 //     | \ |
 //     |  \|
 //  p1 *---* p2
-func quardToTriangle(p1, p2, p3, p4 int, types bool) (t []Triangle) {
+func quardToTriangle(p1, p2, p3, p4 int, types bool) (t []mesh.Triangle) {
 	if types {
-		t = append(t, Triangle{Indexs: [3]int{p1, p3, p2}})
-		t = append(t, Triangle{Indexs: [3]int{p2, p3, p4}})
+		t = append(t, mesh.Triangle{Indexs: [3]int{p1, p3, p2}})
+		t = append(t, mesh.Triangle{Indexs: [3]int{p2, p3, p4}})
 		return t
 	}
-	t = append(t, Triangle{Indexs: [3]int{p1, p4, p2}})
-	t = append(t, Triangle{Indexs: [3]int{p1, p3, p4}})
+	t = append(t, mesh.Triangle{Indexs: [3]int{p1, p4, p2}})
+	t = append(t, mesh.Triangle{Indexs: [3]int{p1, p3, p4}})
 	return t
 }

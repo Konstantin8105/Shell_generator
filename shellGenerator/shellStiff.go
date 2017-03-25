@@ -1,6 +1,11 @@
 package shellGenerator
 
-import "fmt"
+import (
+	"fmt"
+	"math"
+
+	"github.com/Konstantin8105/Shell_generator/gmsh"
+)
 
 // Stiffiner - input data of stiffiners
 type Stiffiner struct {
@@ -45,17 +50,106 @@ func (s *ShellWithStiffiners) AddStiffiners(st Stiffiner) (err error) {
 	return nil
 }
 
-// Generate mesh of shell
-func (s ShellWithStiffiners) Generate(offset bool) (mesh Mesh, err error) {
-	/*
-		if offset {
-			return s.generateWithOffset()
+// GenerateINP - Generate mesh of shell
+func (s ShellWithStiffiners) GenerateINP(filename string) (err error) {
+	err = s.shell.check()
+	if err != nil {
+		return err
+	}
+	if len(s.stiffiners) < 1 {
+		return fmt.Errorf("Error: Please add stiffiners")
+	}
+	sumStifAmount := 0
+	for _, st := range s.stiffiners {
+		err = st.check()
+		sumStifAmount += st.Amount
+		if err != nil {
+			return err
 		}
-		return s.generateWithoutOffset()
-	*/
-	gF := s.generateGMSH()
-	gF.WriteGEO(tempFileName)
-	inpFilenam := execGmsh(tempFileName)
-	mesh = readINP(inpFilename)
-	return mesh, err
+	}
+	if sumStifAmount < 3 {
+		return fmt.Errorf("Error: Minimal amount of stiffiners is 3. You enter %v stiffiners", sumStifAmount)
+	}
+
+	gF, err := s.generateGMSH()
+	if err != nil {
+		return err
+	}
+
+	return gF.WriteINP(filename)
+}
+
+func (s ShellWithStiffiners) generateGMSH() (g gmsh.Format, err error) {
+
+	// center
+	centerPointIndex := 1
+	g.AddPoint(gmsh.Point{
+		Index:     centerPointIndex,
+		X:         0,
+		Y:         0,
+		Z:         0,
+		Precision: s.shell.Precition,
+	})
+	// cylinder
+
+	sumStifAmount := 0
+	for _, st := range s.stiffiners {
+		sumStifAmount += st.Amount
+	}
+
+	startPoint := 10
+	startStiffPoint := startPoint + sumStifAmount
+	startArch := startPoint + sumStifAmount*2
+	startLine := startPoint + sumStifAmount*3
+	angleBetweenStiffiners := 2.0 * math.Pi / float64(sumStifAmount)
+
+	if len(s.stiffiners) > 1 {
+		return g, fmt.Errorf("Algorithm error - now implemented only for 1 type of stiffiner. Please connect to developer")
+	}
+
+	for i := 0; i < sumStifAmount; i++ {
+		angle := angleBetweenStiffiners * float64(i)
+		// points //
+		g.AddPoint(gmsh.Point{
+			Index:     startPoint + i,
+			X:         s.shell.Diameter / 2. * math.Sin(angle),
+			Y:         0.0,
+			Z:         s.shell.Diameter / 2. * math.Cos(angle),
+			Precision: s.shell.Precition,
+		})
+		g.AddPoint(gmsh.Point{
+			Index:     startStiffPoint + i,
+			X:         (s.shell.Diameter/2. + s.stiffiners[0].Height) * math.Sin(angle),
+			Y:         0.0,
+			Z:         (s.shell.Diameter/2. + s.stiffiners[0].Height) * math.Cos(angle),
+			Precision: s.stiffiners[0].Precition,
+		})
+
+		// stiffiners //
+		g.AddLine(gmsh.Line{
+			Index:           startLine + i,
+			BeginPointIndex: startPoint + i,
+			EndPointIndex:   startStiffPoint + i,
+		})
+
+		// arcs //
+		if i != sumStifAmount-1 {
+			g.AddArc(gmsh.Arc{
+				Index:            startArch + i,
+				BeginPointIndex:  startPoint + i,
+				CenterPointIndex: centerPointIndex,
+				EndPointIndex:    startPoint + i + 1,
+			})
+		} else {
+			g.AddArc(gmsh.Arc{
+				Index:            startArch + i,
+				BeginPointIndex:  startPoint + i,
+				CenterPointIndex: centerPointIndex,
+				EndPointIndex:    startPoint,
+			})
+		}
+	}
+
+	g.ExtrudeAll(0, s.shell.Height, 0)
+	return g, nil
 }

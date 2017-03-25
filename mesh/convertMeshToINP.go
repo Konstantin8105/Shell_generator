@@ -1,8 +1,10 @@
-package shellGenerator
+package mesh
 
 import (
 	"fmt"
 	"sort"
+
+	"github.com/Konstantin8105/Convert-INP-to-STD-format/convertorInp"
 )
 
 //------------------------------------------
@@ -18,6 +20,13 @@ import (
 // 1906, 39, 234, 247
 //------------------------------------------
 
+// ConvertMeshToINPfile - convertor
+func (m Mesh) ConvertMeshToINPfile(filename string) (err error) {
+	err = convertorInp.CreateNewFile(filename, m.convertMeshToINP())
+	return err
+
+}
+
 func (m Mesh) convertMeshToINP() (lines []string) {
 	lines = append(lines, "*Heading")
 	lines = append(lines, " shellGenerator")
@@ -27,7 +36,7 @@ func (m Mesh) convertMeshToINP() (lines []string) {
 
 	lines = append(lines, "*NODE")
 	for _, point := range m.Points {
-		lines = append(lines, fmt.Sprintf("%v, %.10e, %.10e, %.10e", point.index, point.X, point.Y, point.Z))
+		lines = append(lines, fmt.Sprintf("%v, %.10e, %.10e, %.10e", point.Index, point.X, point.Y, point.Z))
 	}
 
 	lines = append(lines, "**** ELEMENTS ****")
