@@ -34,6 +34,7 @@ type Mesh struct {
 func (m *Mesh) ConvertInpToMesh(filename string) (err error) {
 	// sort points by index
 	sort.Sort(pp(m.Points))
+
 	var inpFormat inp.Format
 	err = inpFormat.ReadInp(filename)
 	if err != nil {

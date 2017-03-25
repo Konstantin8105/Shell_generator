@@ -13,7 +13,7 @@ func BenchmarkShellPoint_12(b *testing.B) {
 		_ = os.Remove(filename)
 		// test //
 		s := Shell{Height: 5.0, Diameter: 1.0, Precition: 2}
-		err := s.GenerateINP(true, fileName)
+		err := s.GenerateINP(true, filename)
 
 		if err != nil {
 			fmt.Printf("Wrong mesh: %v\n", err)
@@ -52,4 +52,16 @@ func BenchmarkShellPoint_29704(b *testing.B) {
 			return
 		}
 	}
+}
+
+func ExampleShell() {
+	filename := "test_shell.inp"
+	s := Shell{Height: 15.0, Diameter: 3.0, Precition: 0.4}
+	err := s.GenerateINP(true, filename)
+	if err != nil {
+		fmt.Printf("Wrong mesh: %v\n", err)
+		return
+	}
+
+	_ = os.Remove(filename)
 }
