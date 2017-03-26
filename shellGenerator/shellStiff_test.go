@@ -19,7 +19,7 @@ func BenchmarkShellWithStiff(b *testing.B) {
 			return
 
 		}
-		err = shellStiff.AddStiffiners(Stiffiner{Amount: 5, Height: 0.2, Precition: 0.1})
+		err = shellStiff.AddStiffiners(0, 5, 0.2, 0.1)
 		if err != nil {
 			fmt.Printf("Wrong shell: %v\n", err)
 			return
@@ -43,18 +43,12 @@ func Example() {
 	_ = os.Remove(filename)
 
 	s := Shell{Height: 5, Diameter: 2.0, Precition: 0.2}
-	stiffiner := Stiffiner{
-		Amount:    6,
-		Height:    0.2,
-		Precition: 0.5,
-	}
-
 	var shellStiff ShellWithStiffiners
 	if err := shellStiff.AddShell(s); err != nil {
 		fmt.Printf("Wrong shell: %v\n", err)
 		return
 	}
-	if err := shellStiff.AddStiffiners(stiffiner); err != nil {
+	if err := shellStiff.AddStiffiners(0, 6, 0.2, 0.5); err != nil {
 		fmt.Printf("Wrong stiffiner: %v\n", err)
 		return
 	}

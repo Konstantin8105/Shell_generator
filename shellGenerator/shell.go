@@ -33,11 +33,20 @@ func maxInt(a, b int) int {
 	return b
 }
 
-// GenerateINP - Generate file in INP format for shell
-func (s Shell) GenerateINP(offset bool, filename string) (err error) {
+// MeshType - type of mesh
+type MeshType int
+
+// Types of generated mesh
+const (
+	RegularMesh MeshType = iota
+	OffsetMesh
+)
+
+// GenerateMesh - Generate file in Mesh format for shell
+func (s Shell) GenerateMesh(mType MeshType) (m mesh.Mesh, err error) {
 	err = s.check()
 	if err != nil {
-		return err
+		return m, err
 	}
 
 	// generate first level of points
@@ -56,11 +65,9 @@ func (s Shell) GenerateINP(offset bool, filename string) (err error) {
 	var iteratorOffset bool
 	var angleOffset float64
 
-	var m mesh.Mesh
-
 	for level := 0; level <= amountLevelsByHeight; level++ {
 		elevation := deltaHeigt * float64(level)
-		if offset {
+		if mType == OffsetMesh {
 			if iteratorOffset {
 				iteratorOffset = false
 				angleOffset = 2. * float64(math.Pi) / float64(amountOfPointOnLevel) / 2.
@@ -107,8 +114,16 @@ func (s Shell) GenerateINP(offset bool, filename string) (err error) {
 			}
 		}
 	}
+	return m, nil
+}
 
-	return nil
+// GenerateINP - Generate file in INP format for shell
+func (s Shell) GenerateINP(mType MeshType, filename string) (err error) {
+	m, err := s.GenerateMesh(mType)
+	if err != nil {
+		return err
+	}
+	return m.ConvertMeshToINPfile(filename)
 }
 
 // Convert 4 points element to 2 triangle

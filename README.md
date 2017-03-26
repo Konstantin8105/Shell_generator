@@ -7,8 +7,9 @@ Stiffiner is plate on cylinder
 Input data:
   * Diameter of cylinder
   * Height cylinder
-  * Amount stiffiners
-  * Height of stiffiners
+  * Stiffiners(Height and amount):
+  	* Vertical
+	* Horizontal
   * Distance between points
   * Imperfection - Oval, Defect
 
