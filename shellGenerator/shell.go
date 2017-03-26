@@ -74,8 +74,8 @@ func (s Shell) GenerateINP(offset bool, filename string) (err error) {
 			m.Points = append(m.Points, mesh.Point{
 				Index: int(i+amountOfPointOnLevel*level) + initPoint,
 				X:     s.Diameter * math.Sin(angle),
-				Y:     s.Diameter * math.Cos(angle),
-				Z:     elevation,
+				Y:     elevation,
+				Z:     s.Diameter * math.Cos(angle),
 			})
 		}
 	}

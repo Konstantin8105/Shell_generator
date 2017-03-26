@@ -1,4 +1,4 @@
-# Shell_generator
+# Shell Generator
 
 Generate shell mesh with external stiffiners
 
@@ -9,6 +9,8 @@ Input data:
   * Height cylinder
   * Amount stiffiners
   * Height of stiffiners
+  * Distance between points
+  * Imperfection - Oval, Defect
 
 Result:
   * INP mesh

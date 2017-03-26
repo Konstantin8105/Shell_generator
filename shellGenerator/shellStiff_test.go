@@ -31,11 +31,16 @@ func BenchmarkShellWithStiff(b *testing.B) {
 			fmt.Printf("Wrong mesh: %v\n", err)
 			return
 		}
+		// remove file //
+		_ = os.Remove(filename)
 	}
 }
 
 func Example() {
 	filename := "test_shell_cylinder.inp"
+
+	// remove file //
+	_ = os.Remove(filename)
 
 	s := Shell{Height: 5, Diameter: 2.0, Precition: 0.2}
 	stiffiner := Stiffiner{
