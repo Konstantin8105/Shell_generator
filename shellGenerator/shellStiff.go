@@ -125,5 +125,6 @@ func (s ShellWithStiffiners) generateGMSH() (g gmsh.Format, err error) {
 		g.ExtrudeAll(0, s.shell.Height, 0)
 		return g, nil
 	}
+
 	return g, nil
 }

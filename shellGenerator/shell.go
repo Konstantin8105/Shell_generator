@@ -43,23 +43,15 @@ const (
 )
 
 // GenerateMesh - Generate file in Mesh format for shell
-func (s Shell) GenerateMesh(mType MeshType) (m mesh.Mesh, err error) {
+func (s Shell) GenerateMesh(mType MeshType, amountOfPointOnLevel, amountLevelsByHeight int) (m mesh.Mesh, err error) {
 	err = s.check()
 	if err != nil {
 		return m, err
 	}
 
-	// generate first level of points
-	amountOfPointOnLevel := 4
-	if s.Precition < s.Diameter {
-		amountOfPointOnLevel = int(maxInt(amountOfPointOnLevel, int(math.Pi/math.Asin(s.Precition/s.Diameter)+1)))
-	}
-
-	amountLevelsByHeight := maxInt(2, int(s.Height/s.Precition))
 	deltaHeigt := s.Height / float64(amountLevelsByHeight-1)
 
-	// init number of point
-	// cannot be less 1
+	// init number of point, cannot be less 1
 	initPoint := 1
 
 	var iteratorOffset bool
@@ -88,7 +80,6 @@ func (s Shell) GenerateMesh(mType MeshType) (m mesh.Mesh, err error) {
 	}
 
 	// generate triangles
-
 	iteratorOffset = false
 	for level := 0; level < amountLevelsByHeight; level++ {
 		if iteratorOffset {
@@ -119,7 +110,14 @@ func (s Shell) GenerateMesh(mType MeshType) (m mesh.Mesh, err error) {
 
 // GenerateINP - Generate file in INP format for shell
 func (s Shell) GenerateINP(mType MeshType, filename string) (err error) {
-	m, err := s.GenerateMesh(mType)
+	// generate first level of points
+	amountOfPointOnLevel := 4
+	if s.Precition < s.Diameter {
+		amountOfPointOnLevel = int(maxInt(amountOfPointOnLevel, int(math.Pi/math.Asin(s.Precition/s.Diameter)+1)))
+	}
+	amountLevelsByHeight := maxInt(2, int(s.Height/s.Precition))
+
+	m, err := s.GenerateMesh(mType, amountOfPointOnLevel, amountLevelsByHeight)
 	if err != nil {
 		return err
 	}
