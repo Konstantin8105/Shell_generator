@@ -13,7 +13,7 @@ func BenchmarkShellWithStiff(b *testing.B) {
 		_ = os.Remove(filename)
 		// test //
 		var shellStiff ShellWithStiffiners
-		err := shellStiff.AddShell(Shell{Height: 5.0, Diameter: 1.0, Precition: 0.4})
+		err := shellStiff.AddShell(Shell{Height: 5.0, Diameter: 1.0, Precision: 0.4})
 		if err != nil {
 			fmt.Printf("Wrong shell: %v\n", err)
 			return
@@ -42,7 +42,7 @@ func Example() {
 	// remove file //
 	_ = os.Remove(filename)
 
-	s := Shell{Height: 5, Diameter: 2.0, Precition: 0.2}
+	s := Shell{Height: 5, Diameter: 2.0, Precision: 0.2}
 	var shellStiff ShellWithStiffiners
 	if err := shellStiff.AddShell(s); err != nil {
 		fmt.Printf("Wrong shell: %v\n", err)

@@ -11,7 +11,7 @@ import (
 type Shell struct {
 	Height    float64 // unit - meter. Height of shell
 	Diameter  float64 // unit - meter. Diameter of shell
-	Precition float64 // unit - meter. Maximal distance between points
+	Precision float64 // unit - meter. Maximal distance between points
 }
 
 func (s Shell) check() error {
@@ -20,7 +20,7 @@ func (s Shell) check() error {
 		return fmt.Errorf("Height of shell cannot be less or equal zero")
 	case s.Diameter <= 0:
 		return fmt.Errorf("Diameter of shell cannot be less or equal zero")
-	case s.Precition <= 0:
+	case s.Precision <= 0:
 		return fmt.Errorf("Precition of shell cannot be less or equal zero")
 	}
 	return nil
@@ -48,8 +48,7 @@ func (s Shell) GenerateMesh(mType MeshType, amountOfPointOnLevel, amountLevelsBy
 	if err != nil {
 		return m, err
 	}
-
-	deltaHeigt := s.Height / float64(amountLevelsByHeight-1)
+	deltaHeight := s.Height / float64(amountLevelsByHeight)
 
 	// init number of point, cannot be less 1
 	initPoint := 1
@@ -58,7 +57,10 @@ func (s Shell) GenerateMesh(mType MeshType, amountOfPointOnLevel, amountLevelsBy
 	var angleOffset float64
 
 	for level := 0; level <= amountLevelsByHeight; level++ {
-		elevation := deltaHeigt * float64(level)
+		elevation := deltaHeight * float64(level)
+		if level == amountLevelsByHeight {
+			elevation = s.Height
+		}
 		if mType == OffsetMesh {
 			if iteratorOffset {
 				iteratorOffset = false
@@ -72,9 +74,9 @@ func (s Shell) GenerateMesh(mType MeshType, amountOfPointOnLevel, amountLevelsBy
 			angle := 2.*math.Pi/float64(amountOfPointOnLevel)*float64(i) + angleOffset
 			m.Points = append(m.Points, mesh.Point{
 				Index: int(i+amountOfPointOnLevel*level) + initPoint,
-				X:     s.Diameter * math.Sin(angle),
+				X:     s.Diameter * 0.5 * math.Sin(angle),
 				Y:     elevation,
-				Z:     s.Diameter * math.Cos(angle),
+				Z:     s.Diameter * 0.5 * math.Cos(angle),
 			})
 		}
 	}
@@ -112,10 +114,10 @@ func (s Shell) GenerateMesh(mType MeshType, amountOfPointOnLevel, amountLevelsBy
 func (s Shell) GenerateINP(mType MeshType, filename string) (err error) {
 	// generate first level of points
 	amountOfPointOnLevel := 4
-	if s.Precition < s.Diameter {
-		amountOfPointOnLevel = int(maxInt(amountOfPointOnLevel, int(math.Pi/math.Asin(s.Precition/s.Diameter)+1)))
+	if s.Precision < s.Diameter {
+		amountOfPointOnLevel = int(maxInt(amountOfPointOnLevel, int(math.Pi/math.Asin(s.Precision/s.Diameter)+1)))
 	}
-	amountLevelsByHeight := maxInt(2, int(s.Height/s.Precition))
+	amountLevelsByHeight := maxInt(2, int(s.Height/s.Precision+1))
 
 	m, err := s.GenerateMesh(mType, amountOfPointOnLevel, amountLevelsByHeight)
 	if err != nil {

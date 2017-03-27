@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/Konstantin8105/Shell_generator/gmsh"
+	"github.com/Konstantin8105/Shell_generator/mesh"
 )
 
 // ShellWithStiffiners - input data for shell with stiffiners
@@ -51,80 +51,90 @@ func (s ShellWithStiffiners) GenerateINP(filename string) (err error) {
 		return err
 	}
 
-	g, err := s.generateGMSH()
-	if err != nil {
-		return err
+	pointsOnLevels := 4
+	if s.shell.Precision < s.shell.Diameter {
+		pointsOnLevels = int(maxInt(pointsOnLevels, int(math.Pi/math.Asin(s.shell.Precision/s.shell.Diameter)+1)))
+	}
+	var regularPoints int
+	if s.amountVertStiff != 0 {
+		regularPoints = int((float64(pointsOnLevels)/float64(s.amountVertStiff) + 0.5)) * s.amountVertStiff
+	}
+	pointsOnLevels = maxInt(pointsOnLevels, int(regularPoints))
+
+	levels := maxInt(2, int(s.shell.Height/s.shell.Precision+1))
+	var regularLevels int
+	if s.amountHorizStiff != 0 {
+		regularLevels = int((float64(levels)/float64(s.amountHorizStiff+1) + 0.5)) * (s.amountHorizStiff + 1)
+	}
+	levels = maxInt(levels, regularLevels)
+
+	m, err := s.shell.GenerateMesh(RegularMesh, pointsOnLevels, levels)
+
+	// points //
+	initPoint := 1 + (levels+1)*pointsOnLevels
+	deltaHeight := s.shell.Height / float64(levels)
+	//deltaPoint := pointsOnLevels / s.amountVertStiff
+	deltaLevel := levels / (s.amountHorizStiff + 1)
+
+	for level := 0; level <= levels; level++ {
+		elevation := deltaHeight * float64(level)
+		if level == levels {
+			elevation = s.shell.Height
+		}
+		for i := 0; i < pointsOnLevels; i++ {
+			//	if (s.amountHorizStiff > 0 && level > 0 && level != levels && float64(level/deltaLevel) == float64(level)/float64(deltaLevel)) ||
+			//		(s.amountVertStiff > 0 && float64(i/deltaPoint) == float64(i)/(float64(deltaPoint))) {
+			// add point
+			angle := 2. * math.Pi / float64(pointsOnLevels) * float64(i)
+			point := mesh.Point{
+				Index: int(i+pointsOnLevels*level) + initPoint,
+				X:     (s.shell.Diameter*0.5 + s.height) * math.Sin(angle),
+				Y:     elevation,
+				Z:     (s.shell.Diameter*0.5 + s.height) * math.Cos(angle),
+			}
+			m.Points = append(m.Points, point)
+			//	}
+		}
 	}
 
-	return g.WriteINP(filename)
-}
-
-func (s ShellWithStiffiners) generateGMSH() (g gmsh.Format, err error) {
-
-	// center
-	centerPointIndex := 1
-	g.AddPoint(gmsh.Point{
-		Index:     centerPointIndex,
-		X:         0,
-		Y:         0,
-		Z:         0,
-		Precision: s.shell.Precition,
-	})
-
-	// cylinder
-	if s.amountHorizStiff == 0 {
-		startPoint := 10
-		startStiffPoint := startPoint + s.amountVertStiff
-		startArch := startPoint + s.amountVertStiff*2
-		startLine := startPoint + s.amountVertStiff*3
-		angleBetweenStiffiners := 2.0 * math.Pi / float64(s.amountVertStiff)
-
-		for i := 0; i < s.amountVertStiff; i++ {
-			angle := angleBetweenStiffiners * float64(i)
-			// points //
-			g.AddPoint(gmsh.Point{
-				Index:     startPoint + i,
-				X:         s.shell.Diameter / 2. * math.Sin(angle),
-				Y:         0.0,
-				Z:         s.shell.Diameter / 2. * math.Cos(angle),
-				Precision: s.shell.Precition,
-			})
-			g.AddPoint(gmsh.Point{
-				Index:     startStiffPoint + i,
-				X:         (s.shell.Diameter/2. + s.height) * math.Sin(angle),
-				Y:         0.0,
-				Z:         (s.shell.Diameter/2. + s.height) * math.Cos(angle),
-				Precision: s.precision,
-			})
-
-			// stiffiners //
-			g.AddLine(gmsh.Line{
-				Index:           startLine + i,
-				BeginPointIndex: startPoint + i,
-				EndPointIndex:   startStiffPoint + i,
-			})
-
-			// arcs //
-			if i != s.amountVertStiff-1 {
-				g.AddArc(gmsh.Arc{
-					Index:            startArch + i,
-					BeginPointIndex:  startPoint + i,
-					CenterPointIndex: centerPointIndex,
-					EndPointIndex:    startPoint + i + 1,
-				})
-			} else {
-				g.AddArc(gmsh.Arc{
-					Index:            startArch + i,
-					BeginPointIndex:  startPoint + i,
-					CenterPointIndex: centerPointIndex,
-					EndPointIndex:    startPoint,
-				})
+	// triangles //
+	if s.amountVertStiff > 0 {
+		initPoint := 1
+		delta := (levels + 1) * pointsOnLevels
+		for vert := 0; vert < s.amountVertStiff; vert++ {
+			for level := 0; level < levels; level++ {
+				p1 := initPoint + vert*(pointsOnLevels/s.amountVertStiff) + pointsOnLevels*level
+				p2 := initPoint + vert*(pointsOnLevels/s.amountVertStiff) + pointsOnLevels*(level+1)
+				p3 := p1 + delta
+				p4 := p2 + delta
+				m.Triangles = append(m.Triangles, quardToTriangle(p1, p2, p3, p4, true)...)
 			}
 		}
-
-		g.ExtrudeAll(0, s.shell.Height, 0)
-		return g, nil
+	}
+	fmt.Println("deltaLevel = ", deltaLevel)
+	fmt.Println("levels     = ", levels)
+	if s.amountHorizStiff > 0 {
+		initPoint := 1
+		delta := (levels + 1) * pointsOnLevels
+		for horiz := 0; horiz < s.amountHorizStiff; horiz++ {
+			level := (horiz + 1) * deltaLevel
+			for i := 0; i < pointsOnLevels; i++ {
+				var p1, p2, p3, p4 int
+				if i+1 < pointsOnLevels {
+					p1 = i + pointsOnLevels*level + 0 + initPoint
+					p2 = i + pointsOnLevels*level + 1 + initPoint
+					p3 = p1 + delta
+					p4 = p2 + delta
+				} else {
+					p1 = i + pointsOnLevels*level + 0 + initPoint
+					p2 = 0 + pointsOnLevels*level + 0 + initPoint
+					p3 = p1 + delta
+					p4 = p2 + delta
+				}
+				m.Triangles = append(m.Triangles, quardToTriangle(p1, p2, p3, p4, true)...)
+			}
+		}
 	}
 
-	return g, nil
+	return m.ConvertMeshToINPfile(filename)
 }
