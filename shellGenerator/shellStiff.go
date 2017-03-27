@@ -73,7 +73,6 @@ func (s ShellWithStiffiners) GenerateINP(filename string) (err error) {
 	// points //
 	initPoint := 1 + (levels+1)*pointsOnLevels
 	deltaHeight := s.shell.Height / float64(levels)
-	//deltaPoint := pointsOnLevels / s.amountVertStiff
 	deltaLevel := levels / (s.amountHorizStiff + 1)
 
 	for level := 0; level <= levels; level++ {
@@ -82,18 +81,18 @@ func (s ShellWithStiffiners) GenerateINP(filename string) (err error) {
 			elevation = s.shell.Height
 		}
 		for i := 0; i < pointsOnLevels; i++ {
-			//	if (s.amountHorizStiff > 0 && level > 0 && level != levels && float64(level/deltaLevel) == float64(level)/float64(deltaLevel)) ||
-			//		(s.amountVertStiff > 0 && float64(i/deltaPoint) == float64(i)/(float64(deltaPoint))) {
-			// add point
-			angle := 2. * math.Pi / float64(pointsOnLevels) * float64(i)
-			point := mesh.Point{
-				Index: int(i+pointsOnLevels*level) + initPoint,
-				X:     (s.shell.Diameter*0.5 + s.height) * math.Sin(angle),
-				Y:     elevation,
-				Z:     (s.shell.Diameter*0.5 + s.height) * math.Cos(angle),
+			if (s.amountHorizStiff > 0 && level > 0 && level != levels && float64(level/deltaLevel) == float64(level)/float64(deltaLevel)) ||
+				(s.amountVertStiff > 0 && float64(i/(pointsOnLevels/s.amountVertStiff)) == float64(i)/(float64((pointsOnLevels/s.amountVertStiff)))) {
+				// add point
+				angle := 2. * math.Pi / float64(pointsOnLevels) * float64(i)
+				point := mesh.Point{
+					Index: int(i+pointsOnLevels*level) + initPoint,
+					X:     (s.shell.Diameter*0.5 + s.height) * math.Sin(angle),
+					Y:     elevation,
+					Z:     (s.shell.Diameter*0.5 + s.height) * math.Cos(angle),
+				}
+				m.Points = append(m.Points, point)
 			}
-			m.Points = append(m.Points, point)
-			//	}
 		}
 	}
 
@@ -111,8 +110,6 @@ func (s ShellWithStiffiners) GenerateINP(filename string) (err error) {
 			}
 		}
 	}
-	fmt.Println("deltaLevel = ", deltaLevel)
-	fmt.Println("levels     = ", levels)
 	if s.amountHorizStiff > 0 {
 		initPoint := 1
 		delta := (levels + 1) * pointsOnLevels
