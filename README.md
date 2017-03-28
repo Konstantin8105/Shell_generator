@@ -18,9 +18,13 @@ Result:
 
 
 Console menu
+
 ![Console menu](./pictures/menu.png)
 
+
+
 Cylinder
+
 ![Cylinder](./pictures/hcpy_1.png)
 ```golang
 	filename := "exampleCylinder.inp"
@@ -36,7 +40,9 @@ Cylinder
 	}
 ```
 
+
 Cylinder with stiffiners
+
 ![Cylinder with stiffiners](./pictures/hcpy_2.png)
 ```golang
 	filename := "demoCylinderWithStiffiners.inp"
