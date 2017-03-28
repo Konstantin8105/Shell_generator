@@ -17,6 +17,10 @@ Result:
   * INP mesh
 
 
+Console menu
+![Console menu](./pictures/menu.png)
+
+Cylinder
 ![Cylinder](./pictures/hcpy_1.png)
 ```golang
 	filename := "exampleCylinder.inp"
@@ -32,7 +36,7 @@ Result:
 	}
 ```
 
-
+Cylinder with stiffiners
 ![Cylinder with stiffiners](./pictures/hcpy_2.png)
 ```golang
 	filename := "demoCylinderWithStiffiners.inp"
