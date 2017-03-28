@@ -11,7 +11,7 @@ Input data:
   	* Vertical
 	* Horizontal
   * Distance between points
-  * Imperfection - Oval, Defect
+  * TODO : Imperfection - Oval, Defect
 
 Result:
   * INP mesh
