@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/Konstantin8105/Shell_generator/mesh"
+	"github.com/Konstantin8105/Convert-INP-to-STD-format/inp"
 )
 
 // Shell - input data of shell
@@ -43,7 +43,7 @@ const (
 )
 
 // GenerateMesh - Generate file in Mesh format for shell
-func (s Shell) GenerateMesh(mType MeshType, amountOfPointOnLevel, amountLevelsByHeight int) (m mesh.Mesh, err error) {
+func (s Shell) GenerateMesh(mType MeshType, amountOfPointOnLevel, amountLevelsByHeight int) (m inp.Format, err error) {
 	err = s.check()
 	if err != nil {
 		return m, err
@@ -72,17 +72,21 @@ func (s Shell) GenerateMesh(mType MeshType, amountOfPointOnLevel, amountLevelsBy
 		}
 		for i := 0; i < amountOfPointOnLevel; i++ {
 			angle := 2.*math.Pi/float64(amountOfPointOnLevel)*float64(i) + angleOffset
-			m.Points = append(m.Points, mesh.Point{
+			m.Nodes = append(m.Nodes, inp.Node{
 				Index: int(i+amountOfPointOnLevel*level) + initPoint,
-				X:     s.Diameter * 0.5 * math.Sin(angle),
-				Y:     elevation,
-				Z:     s.Diameter * 0.5 * math.Cos(angle),
+				Coord: [3]float64{
+					s.Diameter * float64(0.5) * math.Sin(angle),
+					elevation,
+					s.Diameter * float64(0.5) * math.Cos(angle)},
 			})
 		}
 	}
 
 	// generate triangles
 	iteratorOffset = false
+	var shell inp.Element
+	shell.Name = "shell"
+	shell.ElType = inp.TypeCPS3
 	for level := 0; level < amountLevelsByHeight; level++ {
 		if iteratorOffset {
 			iteratorOffset = false
@@ -91,22 +95,24 @@ func (s Shell) GenerateMesh(mType MeshType, amountOfPointOnLevel, amountLevelsBy
 		}
 		for i := 0; i < amountOfPointOnLevel; i++ {
 			if i+1 < amountOfPointOnLevel {
-				m.Triangles = append(m.Triangles, quardToTriangle(
+				quardToTriangle(&shell,
 					int(i+amountOfPointOnLevel*level+initPoint),
 					int(i+1+amountOfPointOnLevel*level+initPoint),
 					int(i+amountOfPointOnLevel*(level+1)+initPoint),
 					int(i+1+amountOfPointOnLevel*(level+1)+initPoint),
-					iteratorOffset)...)
+					iteratorOffset)
 			} else {
-				m.Triangles = append(m.Triangles, quardToTriangle(
+				quardToTriangle(&shell,
 					int(i+amountOfPointOnLevel*level+initPoint),
 					int(0+amountOfPointOnLevel*level+initPoint),
 					int(i+amountOfPointOnLevel*(level+1)+initPoint),
 					int(0+amountOfPointOnLevel*(level+1)+initPoint),
-					iteratorOffset)...)
+					iteratorOffset)
 			}
 		}
 	}
+	m.Elements = append(m.Elements, shell)
+	m.AddUniqueIndexToElements()
 	return m, nil
 }
 
@@ -123,7 +129,7 @@ func (s Shell) GenerateINP(mType MeshType, filename string) (err error) {
 	if err != nil {
 		return err
 	}
-	return m.ConvertMeshToINPfile(filename)
+	return m.Save(filename)
 }
 
 // Convert 4 points element to 2 triangle
@@ -140,13 +146,25 @@ func (s Shell) GenerateINP(mType MeshType, filename string) (err error) {
 //     | \ |
 //     |  \|
 //  p1 *---* p2
-func quardToTriangle(p1, p2, p3, p4 int, types bool) (t []mesh.Triangle) {
+func quardToTriangle(element *inp.Element, p1, p2, p3, p4 int, types bool) {
 	if types {
-		t = append(t, mesh.Triangle{Indexs: [3]int{p1, p3, p2}})
-		t = append(t, mesh.Triangle{Indexs: [3]int{p2, p3, p4}})
-		return t
+		element.Data = append(element.Data, inp.ElementData{
+			Index:  -1,
+			IPoint: []int{p1, p3, p2},
+		})
+		element.Data = append(element.Data, inp.ElementData{
+			Index:  -1,
+			IPoint: []int{p2, p3, p4},
+		})
+		return
 	}
-	t = append(t, mesh.Triangle{Indexs: [3]int{p1, p4, p2}})
-	t = append(t, mesh.Triangle{Indexs: [3]int{p1, p3, p4}})
-	return t
+	element.Data = append(element.Data, inp.ElementData{
+		Index:  -1,
+		IPoint: []int{p1, p4, p2},
+	})
+	element.Data = append(element.Data, inp.ElementData{
+		Index:  -1,
+		IPoint: []int{p1, p3, p4},
+	})
+	return
 }

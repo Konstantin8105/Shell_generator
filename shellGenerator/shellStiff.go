@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/Konstantin8105/Shell_generator/mesh"
+	"github.com/Konstantin8105/Convert-INP-to-STD-format/inp"
 )
 
 // ShellWithStiffiners - input data for shell with stiffiners
@@ -85,13 +85,15 @@ func (s ShellWithStiffiners) GenerateINP(filename string) (err error) {
 				(s.amountVertStiff > 0 && float64(i/(pointsOnLevels/s.amountVertStiff)) == float64(i)/(float64((pointsOnLevels/s.amountVertStiff)))) {
 				// add point
 				angle := 2. * math.Pi / float64(pointsOnLevels) * float64(i)
-				point := mesh.Point{
+				point := inp.Node{
 					Index: int(i+pointsOnLevels*level) + initPoint,
-					X:     (s.shell.Diameter*0.5 + s.height) * math.Sin(angle),
-					Y:     elevation,
-					Z:     (s.shell.Diameter*0.5 + s.height) * math.Cos(angle),
+					Coord: [3]float64{
+						(s.shell.Diameter*0.5 + s.height) * math.Sin(angle),
+						elevation,
+						(s.shell.Diameter*0.5 + s.height) * math.Cos(angle),
+					},
 				}
-				m.Points = append(m.Points, point)
+				m.Nodes = append(m.Nodes, point)
 			}
 		}
 	}
@@ -100,19 +102,26 @@ func (s ShellWithStiffiners) GenerateINP(filename string) (err error) {
 	if s.amountVertStiff > 0 {
 		initPoint := 1
 		delta := (levels + 1) * pointsOnLevels
+		var vertStiff inp.Element
+		vertStiff.Name = "VerticalStiffiners"
+		vertStiff.ElType = inp.TypeCPS3
 		for vert := 0; vert < s.amountVertStiff; vert++ {
 			for level := 0; level < levels; level++ {
 				p1 := initPoint + vert*(pointsOnLevels/s.amountVertStiff) + pointsOnLevels*level
 				p2 := initPoint + vert*(pointsOnLevels/s.amountVertStiff) + pointsOnLevels*(level+1)
 				p3 := p1 + delta
 				p4 := p2 + delta
-				m.Triangles = append(m.Triangles, quardToTriangle(p1, p2, p3, p4, true)...)
+				quardToTriangle(&vertStiff, p1, p2, p3, p4, true)
 			}
 		}
+		m.Elements = append(m.Elements, vertStiff)
 	}
 	if s.amountHorizStiff > 0 {
 		initPoint := 1
 		delta := (levels + 1) * pointsOnLevels
+		var horizStiff inp.Element
+		horizStiff.Name = "HorizontalStiffiners"
+		horizStiff.ElType = inp.TypeCPS3
 		for horiz := 0; horiz < s.amountHorizStiff; horiz++ {
 			level := (horiz + 1) * deltaLevel
 			for i := 0; i < pointsOnLevels; i++ {
@@ -128,10 +137,12 @@ func (s ShellWithStiffiners) GenerateINP(filename string) (err error) {
 					p3 = p1 + delta
 					p4 = p2 + delta
 				}
-				m.Triangles = append(m.Triangles, quardToTriangle(p1, p2, p3, p4, true)...)
+				quardToTriangle(&horizStiff, p1, p2, p3, p4, true)
 			}
 		}
+		m.Elements = append(m.Elements, horizStiff)
 	}
 
-	return m.ConvertMeshToINPfile(filename)
+	m.AddUniqueIndexToElements()
+	return m.Save(filename)
 }

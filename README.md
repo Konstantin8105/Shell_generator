@@ -11,7 +11,9 @@ Input data:
   	* Vertical
 	* Horizontal
   * Distance between points
-  * TODO : Imperfection - Oval, Defect
+  * **TODO** : Imperfection - Oval, Defect
+  * **TODO** : 3-node, 4-node, 8-node finite element
+  * **TODO** : GMSH creating model
 
 Result:
   * INP mesh

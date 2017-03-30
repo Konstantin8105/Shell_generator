@@ -1,12 +1,6 @@
 package mesh
 
-import (
-	"fmt"
-	"sort"
-
-	"github.com/Konstantin8105/Convert-INP-to-STD-format/convertorInp"
-)
-
+/*
 //------------------------------------------
 // INP file format
 // *Heading
@@ -22,7 +16,7 @@ import (
 
 // ConvertMeshToINPfile - convertor
 func (m Mesh) ConvertMeshToINPfile(filename string) (err error) {
-	err = convertorInp.CreateNewFile(filename, m.convertMeshToINP())
+	err = utils.CreateNewFile(filename, m.convertMeshToINP())
 	return err
 
 }
@@ -45,4 +39,4 @@ func (m Mesh) convertMeshToINP() (lines []string) {
 		lines = append(lines, fmt.Sprintf("%v, %v, %v, %v", i+1, t.Indexs[0], t.Indexs[1], t.Indexs[2]))
 	}
 	return
-}
+}*/

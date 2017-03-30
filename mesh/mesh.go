@@ -1,12 +1,6 @@
 package mesh
 
-import (
-	"fmt"
-	"sort"
-
-	"github.com/Konstantin8105/Convert-INP-to-STD-format/inp"
-)
-
+/*
 // Point - point of mesh
 type Point struct {
 	Index   int     // index of point
@@ -36,7 +30,7 @@ func (m *Mesh) ConvertInpToMesh(filename string) (err error) {
 	sort.Sort(pp(m.Points))
 
 	var inpFormat inp.Format
-	err = inpFormat.ReadInp(filename)
+	err = inpFormat.Open(filename)
 	if err != nil {
 		return err
 	}
@@ -61,4 +55,4 @@ func (m *Mesh) ConvertInpToMesh(filename string) (err error) {
 	}
 
 	return nil
-}
+}*/
