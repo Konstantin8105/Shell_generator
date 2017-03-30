@@ -113,6 +113,10 @@ func (s Shell) GenerateMesh(mType MeshType, amountOfPointOnLevel, amountLevelsBy
 	}
 	m.Elements = append(m.Elements, shell)
 	m.AddUniqueIndexToElements()
+
+	m.AddNamedNodesOnLevel(0.0, "Bottom")
+	m.AddNamedNodesOnLevel(s.Height, "Top")
+
 	return m, nil
 }
 
