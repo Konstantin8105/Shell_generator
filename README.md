@@ -33,9 +33,9 @@ Cylinder
 	// remove file //
 	_ = os.Remove(filename)
 	// input data //
-	s := shellGenerator.Shell{Height: 5.0, Diameter: 2.0, Precision: 0.1}
+	s := shellGenerator.Shell{Height: 5.0, Diameter: 2.0, Precision: 0.2}
 	// write the result to INP format //
-	err := s.GenerateINP(shellGenerator.OffsetMesh, filename)
+	err := s.GenerateINP(filename)
 	if err != nil {
 		fmt.Printf("Wrong mesh: %v\n", err)
 		return
@@ -56,7 +56,7 @@ Cylinder with stiffiners
 		fmt.Printf("Wrong shell: %v\n", err)
 		return
 	}
-	if err := shellStiff.AddStiffiners(0, 6, 0.2, 0.5); err != nil {
+	if err := shellStiff.AddStiffiners(2, 6, 0.2, 0.5); err != nil {
 		fmt.Printf("Wrong stiffiner: %v\n", err)
 		return
 	}

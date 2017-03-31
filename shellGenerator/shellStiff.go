@@ -30,8 +30,8 @@ func (s *ShellWithStiffiners) AddStiffiners(amountHorizStiff, amountVertStiff in
 	switch {
 	case amountHorizStiff < 0:
 		return fmt.Errorf("Error: Amount of horizontal stiffiners cannot be less zero")
-	case amountVertStiff < 3:
-		return fmt.Errorf("Error: Amount of vertical stiffiners cannot be less 3")
+	case amountVertStiff < 0:
+		return fmt.Errorf("Error: Amount of vertical stiffiners cannot be less zero")
 	case height <= 0:
 		return fmt.Errorf("Error: Height of stiffiners cannot be less or equal zero")
 	case precision <= 0:
@@ -68,7 +68,7 @@ func (s ShellWithStiffiners) GenerateINP(filename string) (err error) {
 	}
 	levels = maxInt(levels, regularLevels)
 
-	m, err := s.shell.GenerateMesh(RegularMesh, pointsOnLevels, levels)
+	m, err := s.shell.GenerateMesh(pointsOnLevels, levels)
 
 	// points //
 	initPoint := 1 + (levels+1)*pointsOnLevels
@@ -104,14 +104,17 @@ func (s ShellWithStiffiners) GenerateINP(filename string) (err error) {
 		delta := (levels + 1) * pointsOnLevels
 		var vertStiff inp.Element
 		vertStiff.Name = "VerticalStiffiners"
-		vertStiff.ElType = inp.TypeCPS3
+		vertStiff.FE, err = inp.GetFiniteElementByName("S4")
+		if err != nil {
+			return err
+		}
 		for vert := 0; vert < s.amountVertStiff; vert++ {
 			for level := 0; level < levels; level++ {
 				p1 := initPoint + vert*(pointsOnLevels/s.amountVertStiff) + pointsOnLevels*level
 				p2 := initPoint + vert*(pointsOnLevels/s.amountVertStiff) + pointsOnLevels*(level+1)
 				p3 := p1 + delta
 				p4 := p2 + delta
-				quardToTriangle(&vertStiff, p1, p2, p3, p4, true)
+				quardToTriangle(&vertStiff, p1, p2, p3, p4)
 			}
 		}
 		m.Elements = append(m.Elements, vertStiff)
@@ -121,7 +124,10 @@ func (s ShellWithStiffiners) GenerateINP(filename string) (err error) {
 		delta := (levels + 1) * pointsOnLevels
 		var horizStiff inp.Element
 		horizStiff.Name = "HorizontalStiffiners"
-		horizStiff.ElType = inp.TypeCPS3
+		horizStiff.FE, err = inp.GetFiniteElementByName("S4")
+		if err != nil {
+			return err
+		}
 		for horiz := 0; horiz < s.amountHorizStiff; horiz++ {
 			level := (horiz + 1) * deltaLevel
 			for i := 0; i < pointsOnLevels; i++ {
@@ -137,7 +143,7 @@ func (s ShellWithStiffiners) GenerateINP(filename string) (err error) {
 					p3 = p1 + delta
 					p4 = p2 + delta
 				}
-				quardToTriangle(&horizStiff, p1, p2, p3, p4, true)
+				quardToTriangle(&horizStiff, p1, p2, p3, p4)
 			}
 		}
 		m.Elements = append(m.Elements, horizStiff)
