@@ -14,6 +14,12 @@ type Shell struct {
 	Precision float64 // unit - meter. Maximal distance between points
 }
 
+var ShellName string
+
+func init() {
+	ShellName = "shell"
+}
+
 func (s Shell) check() error {
 	switch {
 	case s.Height <= 0:
@@ -65,7 +71,7 @@ func (s Shell) GenerateMesh(amountOfPointOnLevel, amountLevelsByHeight int) (m i
 
 	// generate triangles
 	var shell inp.Element
-	shell.Name = "shell"
+	shell.Name = ShellName
 	shell.FE, err = inp.GetFiniteElementByName("S4")
 	if err != nil {
 		return m, err
@@ -89,9 +95,6 @@ func (s Shell) GenerateMesh(amountOfPointOnLevel, amountLevelsByHeight int) (m i
 	}
 	m.Elements = append(m.Elements, shell)
 	m.AddUniqueIndexToElements()
-
-	m.AddNamedNodesOnLevel(0.0, "Bottom")
-	m.AddNamedNodesOnLevel(s.Height, "Top")
 
 	return m, nil
 }
