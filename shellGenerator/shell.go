@@ -14,6 +14,7 @@ type Shell struct {
 	Precision float64 // unit - meter. Maximal distance between points
 }
 
+// ShellName - name of shell for include the property and loads
 var ShellName string
 
 func init() {
@@ -70,7 +71,7 @@ func (s Shell) GenerateMesh(amountOfPointOnLevel, amountLevelsByHeight int) (m i
 			})
 		}
 	}
-	fmt.Println("Generate points")
+	//fmt.Println("Generate points")
 
 	// generate triangles
 	var shell inp.Element
@@ -99,10 +100,11 @@ func (s Shell) GenerateMesh(amountOfPointOnLevel, amountLevelsByHeight int) (m i
 		}
 	}
 	m.Elements = append(m.Elements, shell)
-	fmt.Println("Generate elements")
+	//fmt.Println("Generate elements")
 	m.AddUniqueIndexToElements()
 
-	fmt.Println("Return model")
+	fmt.Printf("Create model with %5v points and %5v elements\n", len(m.Nodes), len(shell.Data))
+	//fmt.Println("Return model")
 	return m, nil
 }
 
