@@ -51,6 +51,8 @@ func (s Shell) GenerateMesh(amountOfPointOnLevel, amountLevelsByHeight int) (m i
 	initPoint := 1
 
 	var angleOffset float64
+	l := (amountLevelsByHeight + 1) * amountOfPointOnLevel
+	m.Nodes = make([]inp.Node, 0, l)
 
 	for level := 0; level <= amountLevelsByHeight; level++ {
 		elevation := deltaHeight * float64(level)
@@ -68,6 +70,7 @@ func (s Shell) GenerateMesh(amountOfPointOnLevel, amountLevelsByHeight int) (m i
 			})
 		}
 	}
+	fmt.Println("Generate points")
 
 	// generate triangles
 	var shell inp.Element
@@ -76,6 +79,8 @@ func (s Shell) GenerateMesh(amountOfPointOnLevel, amountLevelsByHeight int) (m i
 	if err != nil {
 		return m, err
 	}
+	l2 := amountLevelsByHeight * amountOfPointOnLevel
+	shell.Data = make([]inp.ElementData, 0, l2)
 	for level := 0; level < amountLevelsByHeight; level++ {
 		for i := 0; i < amountOfPointOnLevel; i++ {
 			if i+1 < amountOfPointOnLevel {
@@ -94,8 +99,10 @@ func (s Shell) GenerateMesh(amountOfPointOnLevel, amountLevelsByHeight int) (m i
 		}
 	}
 	m.Elements = append(m.Elements, shell)
+	fmt.Println("Generate elements")
 	m.AddUniqueIndexToElements()
 
+	fmt.Println("Return model")
 	return m, nil
 }
 
