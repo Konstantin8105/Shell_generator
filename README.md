@@ -11,6 +11,9 @@ Input data:
   	* Vertical
 	* Horizontal
   * Distance between points
+  * **TODO** : different type of vertical and horizontal stiffiners
+  * **TODO** : Different height of stiffiners
+  * **TODO** : I-column
   * **TODO** : Imperfection - Oval, Defect
   * **TODO** : 3-node, 4-node, 8-node finite element
   * **TODO** : GMSH creating model
