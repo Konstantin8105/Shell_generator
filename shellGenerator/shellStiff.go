@@ -114,7 +114,7 @@ func (s ShellWithStiffiners) GenerateINP(filename string) (err error) {
 				p2 := initPoint + vert*(pointsOnLevels/s.amountVertStiff) + pointsOnLevels*(level+1)
 				p3 := p1 + delta
 				p4 := p2 + delta
-				quardToTriangle(&vertStiff, p1, p2, p3, p4)
+				quardToRectangle(&vertStiff, p1, p2, p3, p4)
 			}
 		}
 		m.Elements = append(m.Elements, vertStiff)
@@ -143,7 +143,7 @@ func (s ShellWithStiffiners) GenerateINP(filename string) (err error) {
 					p3 = p1 + delta
 					p4 = p2 + delta
 				}
-				quardToTriangle(&horizStiff, p1, p2, p3, p4)
+				quardToRectangle(&horizStiff, p1, p2, p3, p4)
 			}
 		}
 		m.Elements = append(m.Elements, horizStiff)

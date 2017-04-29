@@ -85,13 +85,13 @@ func (s Shell) GenerateMesh(amountOfPointOnLevel, amountLevelsByHeight int) (m i
 	for level := 0; level < amountLevelsByHeight; level++ {
 		for i := 0; i < amountOfPointOnLevel; i++ {
 			if i+1 < amountOfPointOnLevel {
-				quardToTriangle(&shell,
+				quardToRectangle(&shell,
 					int(i+amountOfPointOnLevel*level+initPoint),
 					int(i+1+amountOfPointOnLevel*level+initPoint),
 					int(i+amountOfPointOnLevel*(level+1)+initPoint),
 					int(i+1+amountOfPointOnLevel*(level+1)+initPoint))
 			} else {
-				quardToTriangle(&shell,
+				quardToRectangle(&shell,
 					int(i+amountOfPointOnLevel*level+initPoint),
 					int(0+amountOfPointOnLevel*level+initPoint),
 					int(i+amountOfPointOnLevel*(level+1)+initPoint),
@@ -130,7 +130,7 @@ func (s Shell) GenerateINP(filename string) (err error) {
 //     |   |
 //     |   |
 //  p1 *---* p2
-func quardToTriangle(element *inp.Element, p1, p2, p3, p4 int) {
+func quardToRectangle(element *inp.Element, p1, p2, p3, p4 int) {
 	element.Data = append(element.Data, inp.ElementData{
 		Index:  -1,
 		IPoint: []int{p1, p2, p4, p3},
