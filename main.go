@@ -15,5 +15,6 @@ func main() {
 		wallGenerator.ShapePosition{wallGenerator.Shape(wallGenerator.NewAngle(0.120, 0.012, wallGenerator.Type4)), 1.5},
 	}
 
-	_, _ = wallGenerator.WallGenerator(wallGenerator.Wall{Lenght: 2.0, Height: 1.0, Thk: 0.005}, v, h)
+	inp, _ := wallGenerator.WallGenerator(wallGenerator.Wall{Lenght: 2.0, Height: 1.0, Thk: 0.005}, v, h)
+	_ = inp.Save("wall.inp")
 }
