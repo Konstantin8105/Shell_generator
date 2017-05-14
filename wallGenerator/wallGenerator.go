@@ -6,6 +6,13 @@ import (
 	"github.com/Konstantin8105/Convert-INP-to-STD-format/inp"
 )
 
+type direction bool
+
+const (
+	horizontalDirection direction = false
+	verticalDirection             = true
+)
+
 // Wall - basic parameters of wall
 type Wall struct {
 	Lenght float64
@@ -42,7 +49,55 @@ func WallGenerator(wall Wall, vertical []ShapePosition, horizontal []ShapePositi
 		}
 	}
 
-	// insert points of shell
+	//TODO: add precision
+	/*
+		// insert points of shell
+		n, e, err := createShellByLines(horizLine, vertLine)
+		if err != nil {
+			return f, err
+		}
+		e.Name = "Shell"
+		//TODO: f.Add(n, e)
+
+		// create vertical shapes
+		for i := range vertical {
+			n, e, _ := createShapeByLine(vertical[i], vertLine, verticalDirection)
+			e.Name = "VertShape"
+			//TODO: f.Add(n, e)
+		}
+
+		// create horizontal shapes
+		for i := range horizontal {
+			n, e, _ := createShapeByLine(vertical[i], vertLine, verticalDirection)
+			e.Name = "HorizShape"
+			//TODO: f.Add(n, e)
+		}
+	*/
+	// debug
+	fmt.Println("horizLine = ", horizLine)
+	fmt.Println("vertLine = ", vertLine)
+
+	return f, nil
+}
+
+func createShapeByLine(shape ShapePosition, line Line, direct direction) (nodes []inp.Node, element inp.Element, err error) {
+	/*
+		// add point and elements for 01, 12, 13
+		sides := [3]sideType{side01, side12, side13}
+		for i := range sides {
+			s := ([5]side(shape.Sh))[sides[i]]
+			if !s.exist {
+				continue
+			}
+			n, e, _ := createShellByLines(s.line, line)
+
+			// coordinates : a, b
+		}
+	*/
+	return nodes, element, nil
+}
+
+func createShellByLines(horizLine Line, vertLine Line) (nodes []inp.Node, element inp.Element, err error) {
 	initPointIndex := 1
 	indexOfPoint := initPointIndex
 	vertSegments := []LineSegment(vertLine)
@@ -55,7 +110,7 @@ func WallGenerator(wall Wall, vertical []ShapePosition, horizontal []ShapePositi
 				Index: indexOfPoint,
 				Coord: [3]float64{x, y, 0.0},
 			}
-			f.Nodes = append(f.Nodes, n)
+			nodes = append(nodes, n)
 			indexOfPoint++
 		}
 		x := horizSegmengs[j].EndPosition
@@ -63,7 +118,7 @@ func WallGenerator(wall Wall, vertical []ShapePosition, horizontal []ShapePositi
 			Index: indexOfPoint,
 			Coord: [3]float64{x, y, 0.0},
 		}
-		f.Nodes = append(f.Nodes, n)
+		nodes = append(nodes, n)
 		indexOfPoint++
 	}
 	for i := range vertSegments {
@@ -79,7 +134,7 @@ func WallGenerator(wall Wall, vertical []ShapePosition, horizontal []ShapePositi
 					},
 				}
 				indexOfPoint++
-				f.Nodes = append(f.Nodes, n)
+				nodes = append(nodes, n)
 			}
 			x := horizSegmengs[j].EndPosition
 			n := inp.Node{
@@ -91,17 +146,17 @@ func WallGenerator(wall Wall, vertical []ShapePosition, horizontal []ShapePositi
 				},
 			}
 			indexOfPoint++
-			f.Nodes = append(f.Nodes, n)
+			nodes = append(nodes, n)
 		}
 	}
 
-	// create rectangle shell element by points
+	// create shells
+
 	shellName := "shell"
-	var element inp.Element
 	element.Name = shellName
 	element.FE, err = inp.GetFiniteElementByName("S4")
 	if err != nil {
-		return f, fmt.Errorf("Not correct FE in %v. err = %v", shellName, err)
+		return nodes, element, fmt.Errorf("Not correct FE in %v. err = %v", shellName, err)
 	}
 	element.Data = make([]inp.ElementData, len(vertSegments)*len(horizSegmengs), len(vertSegments)*len(horizSegmengs))
 	indexOfElement := 1
@@ -119,13 +174,5 @@ func WallGenerator(wall Wall, vertical []ShapePosition, horizontal []ShapePositi
 			indexOfElement++
 		}
 	}
-	f.Elements = append(f.Elements, element)
-	// create vertical shapes
-	// create horizontal shapes
-
-	// debug
-	fmt.Println("horizLine = ", horizLine)
-	fmt.Println("vertLine = ", vertLine)
-
-	return f, nil
+	return nodes, element, nil
 }
